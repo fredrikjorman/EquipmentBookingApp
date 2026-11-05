@@ -1,4 +1,6 @@
-﻿using EquipmentBookingApp;
+﻿
+using EquipmentBookingApp;
+using System.Globalization;
 
 var repository = new BookingRepository();
 var bookingService = new BookingService(repository);
@@ -16,18 +18,30 @@ while (true)
         Console.WriteLine("Programmet avslutas.");
         break;
     }
+
     Console.Write("Ange startdatum (ÅÅÅÅ-MM-DD): ");
     string? startInput = Console.ReadLine();
+
     Console.Write("Ange slutdatum (ÅÅÅÅ-MM-DD): ");
     string? endInput = Console.ReadLine();
 
-    if (!DateTime.TryParse(startInput, out DateTime startDate))
+    if (!DateTime.TryParseExact(
+        startInput,
+        "yyyy-MM-dd",
+        CultureInfo.InvariantCulture,
+        DateTimeStyles.None,
+        out DateTime startDate))
     {
         Console.WriteLine("Ogiltigt startdatum.");
         continue;
     }
 
-    if (!DateTime.TryParse(endInput, out DateTime endDate))
+    if (!DateTime.TryParseExact(
+        endInput,
+        "yyyy-MM-dd",
+        CultureInfo.InvariantCulture,
+        DateTimeStyles.None,
+        out DateTime endDate))
     {
         Console.WriteLine("Ogiltigt slutdatum.");
         continue;
@@ -37,7 +51,6 @@ while (true)
     {
         Console.WriteLine("Slutdatum kan inte vara före startdatum.");
         continue;
-
     }
 
     if (!bookingService.IsAvailable(equipmentName, startDate, endDate))
@@ -46,28 +59,42 @@ while (true)
         continue;
     }
 
-    decimal totalPrice = bookingService.CalculateTotalPrice(startDate, endDate);
-    Console.WriteLine($"Totalpris: {totalPrice} kr");
+    decimal totalPrice = bookingService.CalculateTotalPrice(
+        startDate,
+        endDate);
 
+    Console.WriteLine($"Totalpris: {totalPrice} kr");
 
     Console.Write("Vill du bekräfta bokningen? (ja/nej): ");
     string? confirmation = Console.ReadLine();
 
     if (confirmation?.Trim().ToLower() == "ja")
     {
-        var booking = bookingService.CreateBooking(
-            customerName,
-            equipmentName,
-            startDate,
-            endDate);
+        try
+        {
+            var booking = bookingService.CreateBooking(
+                customerName,
+                equipmentName,
+                startDate,
+                endDate);
 
-        Console.WriteLine($"Bokning bekräftad!");
-        Console.WriteLine($"Bokningsnummer: {booking.BookingNumber}");
-        Console.WriteLine($"Totalpris: {booking.TotalPrice} kr");
+            Console.WriteLine("Bokning bekräftad!");
+            Console.WriteLine($"Bokningsnummer: {booking.BookingNumber}");
+            Console.WriteLine($"Totalpris: {booking.TotalPrice} kr");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Fel: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Fel: {ex.Message}");
+        }
     }
     else
     {
         Console.WriteLine("Bokningen avbröts.");
     }
 
+    Console.WriteLine();
 }
