@@ -55,7 +55,7 @@ All 7 unit tests passed during development.
 
 ## How It Works
 
-The application uses a predefined customer and equipment item.
+The application uses a predeset customer and equipment item.
 
 The user enters a start date and an end date. The system validates the dates, checks availability and calculates the total price.
 
